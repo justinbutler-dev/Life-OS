@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My OS">
+<title>My OS</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #1a1a1a;
+    --bg3: #242424;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0ede8;
+    --muted: #888;
+    --accent: #c8b89a;
+    --p1: #7c6fcd;
+    --p2: #4aab85;
+    --p3: #d4924a;
+    --skin-am: #d4924a;
+    --skin-pm: #5b8fc7;
+    --radius: 12px;
+    --font: 'Georgia', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+  body { display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
+
+  header { padding: 52px 20px 16px; border-bottom: 1px solid var(--border); }
+  header h1 { font-family: var(--font); font-size: 22px; font-weight: normal; color: var(--accent); letter-spacing: 0.02em; }
+  header p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  nav { display: flex; gap: 0; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
+  nav::-webkit-scrollbar { display: none; }
+  nav button { padding: 12px 16px; font-size: 12px; font-family: var(--sans); color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent; white-space: nowrap; cursor: pointer; transition: all .2s; letter-spacing: 0.04em; text-transform: uppercase; }
+  nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  main { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .phase { margin-bottom: 14px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .phase-hdr { display: flex; align-items: center; gap: 10px; padding: 13px 15px; background: var(--bg2); }
+  .badge { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.05em; }
+  .b1 { background: rgba(124,111,205,0.2); color: #b0a5f0; }
+  .b2 { background: rgba(74,171,133,0.2); color: #7dd4b0; }
+  .b3 { background: rgba(212,146,74,0.2); color: #e4b278; }
+  .phase-title { font-size: 14px; font-weight: 500; flex: 1; }
+  .phase-time { font-size: 11px; color: var(--muted); }
+  .phase-body { padding: 4px 15px 12px; }
+  .item { display: flex; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); align-items: flex-start; }
+  .item:first-child { border-top: none; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); flex-shrink: 0; margin-top: 7px; }
+  .item-main { font-size: 13px; color: var(--text); }
+  .item-sub { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+
+  .block { display: flex; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .block:last-child { border-bottom: none; }
+  .time-tag { font-size: 10px; font-weight: 600; color: var(--muted); background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; white-space: nowrap; min-width: 80px; text-align: center; margin-top: 2px; letter-spacing: 0.03em; }
+  .block-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .block-sub { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+
+  .dcard { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 15px; margin-bottom: 12px; }
+  .dcard-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .dcard-title { font-size: 14px; font-weight: 500; }
+  .eta-tag { font-size: 10px; color: var(--muted); background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 2px 8px; }
+  .dcard ul { padding-left: 16px; }
+  .dcard li { font-size: 13px; color: var(--muted); margin-bottom: 5px; line-height: 1.5; }
+  .dcard li span { color: var(--text); }
+  .note { font-size: 12px; color: var(--muted); background: var(--bg2); border-radius: 8px; padding: 9px 12px; margin-top: 10px; line-height: 1.5; border-left: 2px solid var(--border2); }
+
+  .routine-block { margin-bottom: 20px; }
+  .routine-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; padding: 5px 10px; border-radius: 6px; display: inline-block; }
+  .lbl-am { background: rgba(212,146,74,0.15); color: #e4b278; }
+  .lbl-pm { background: rgba(91,143,199,0.15); color: #8ab4e4; }
+  .step { display: flex; gap: 12px; padding: 11px 0; border-top: 1px solid var(--border); align-items: flex-start; }
+  .step:first-of-type { border-top: none; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); flex-shrink: 0; margin-top: 1px; }
+  .step-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .product-name { display: inline; font-size: 11px; font-weight: 600; color: var(--accent); background: rgba(200,184,154,0.12); border-radius: 4px; padding: 1px 6px; margin-left: 5px; }
+  .step-sub { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .rule { border-left: 2px solid var(--accent); padding: 10px 14px; margin-bottom: 10px; background: var(--bg2); border-radius: 0 8px 8px 0; }
+  .rule-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .rule-sub { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+
+  .section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>My OS</h1>
+  <p>Daily operating system — bookmark this page</p>
+</header>
+
+<nav>
+  <button class="active" onclick="show('sequence', this)">Sequence</button>
+  <button onclick="show('daily', this)">Daily</button>
+  <button onclick="show('domains', this)">Domains</button>
+  <button onclick="show('skincare', this)">Skincare</button>
+  <button onclick="show('rules', this)">Rules</button>
+</nav>
+
+<main>
+
+<!-- SEQUENCE -->
+<div id="sequence" class="panel active">
+  <div class="phase">
+    <div class="phase-hdr">
+      <span class="badge b1">Phase 1</span>
+      <span class="phase-title">Build the machine</span>
+      <span class="phase-time">Wks 1–2</span>
+    </div>
+    <div class="phase-body">
+      <div class="item"><div class="dot"></div><div><div class="item-main">Read Atomic Habits — 20 pages/night</div><div class="item-sub">1 note + 1 action per session. Done in 10 days. This is the user manual for everything else.</div></div></div>
+      <div class="item"><div class="dot"></div><div><div class="item-main">Set up the Daily OS</div><div class="item-sub">Morning anchor + evening wind-down. Schedule your life like a mission.</div></div></div>
+      <div class="item"><div class="dot"></div><div><div class="item-main">Hard app limits — 1hr/day social + gaming</div><div class="item-sub">iOS Screen Time. Hard walls, not willpower.</div></div></div>
+      <div class="item"><div class="dot"></div><div><div class="item-main">Start skincare routine tonight</div><div class="item-sub">Products on the counter now. Routine starts tomorrow AM. See Skincare tab.</div></div></div>
+      <div class="item"><div class="dot"></div><div><div class="item-main">Sprint first WGU class this weekend</div><div class="item-sub">Fri evening through Sunday. One class, total focus, done.</div></div></div>
+      <div class="item"><div class="dot"></div><div><div class="item-main">Finance: auto-transfer savings on payday</div><div class="item-sub">Even $50. Set it once. Live on what's left.</div></div></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-hdr">
+      <span class="badge b2">Phase 2</span>
+      <span class="phase-title">Stack and execute</span>
+      <span class="phase-time">Wks 3–8</span>
+    </div>
+    <div class="phase-body">
+      <div class="item"><div class="dot"></div><div><div class="item-main">Fitness — formation → gym, no detour home</div><div class="item-sub">Plan is built. Only variable is showing up.</div></div></div>
+      <div class="item"><div class="dot"></div><div><div class="item-main">WGU sprint every 2–4 weeks</div><div class="item-sub">One weekend per class. Map how many left and set a graduation date.</div></div></div>
+      <div class="item"><div class="dot"></div><div><div class="item-main">Read Thank You for Arguing</div><div class="item-sub">One technique per week in real conversations. This fixes the speech issue.</div></div></div>
+      <div class="item"><div class="dot"></div><div><div class="item-main">Skincare is automatic by now</div><div class="item-sub">If you started Week 1 it's a habit. Keep running it.</div></div></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-hdr">
+      <span class="badge b3">Phase 3</span>
+      <span class="phase-title">Build up and pursue</span>
+      <span class="phase-time">Wk 9+</span>
+    </div>
+    <div class="phase-body">
+      <div class="item"><div class="dot"></div><div><div class="item-main">Officer path — requirements and timeline</div><div class="item-sub">Degree, AFOQT, commander endorsement, OTS board. Degree comes first.</div></div></div>
+      <div class="item"><div class="dot"></div><div><div class="item-main">7 Keys to Marriage — one chapter/week with wife</div><div class="item-sub">Sunday evenings over dinner. Ritual, not homework.</div></div></div>
+      <div class="item"><div class="dot"></div><div><div class="item-main">Communication — structured practice</div><div class="item-sub">Apply Thank You for Arguing framework in low-stakes settings first.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY -->
+<div id="daily" class="panel">
+  <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Adapt to your duty schedule. Blocks matter more than exact times.</p>
+  <div class="block"><div class="time-tag">0530–0600</div><div><div class="block-title">Morning anchor</div><div class="block-sub">No phone. 5 min vocal journal — say your 3 priorities out loud. AM skincare (3 min). Water + supplements.</div></div></div>
+  <div class="block"><div class="time-tag">0600–0700</div><div><div class="block-title">PT / formation</div><div class="block-sub">Gym days: go straight from formation. Don't go home first.</div></div></div>
+  <div class="block"><div class="time-tag">Lunch</div><div><div class="block-title">Micro-learning</div><div class="block-sub">20 min WGU or 20 pages. Even 3 days/week compounds fast.</div></div></div>
+  <div class="block"><div class="time-tag">1800–1900</div><div><div class="block-title">Dinner + wife</div><div class="block-sub">No phone at the table. Daily marriage investment — present, consistent.</div></div></div>
+  <div class="block"><div class="time-tag">1900–2000</div><div><div class="block-title">Growth block</div><div class="block-sub">School OR reading. One focused thing. 45–60 min. This is where your goals get built.</div></div></div>
+  <div class="block"><div class="time-tag">2000–2100</div><div><div class="block-title">Wind down</div><div class="block-sub">Reading or scheduled game time — not defaulted to. PM skincare before bed.</div></div></div>
+  <div class="block"><div class="time-tag">2100</div><div><div class="block-title">Lights out</div><div class="block-sub">Magnesium glycinate. Phone charging in another room. Sleep is the force multiplier for everything.</div></div></div>
+</div>
+
+<!-- DOMAINS -->
+<div id="domains" class="panel">
+  <div class="dcard">
+    <div class="dcard-hdr"><span class="dcard-title">School (WGU)</span><span class="eta-tag">Highest ROI</span></div>
+    <ul><li><span>One class per weekend sprint</span> — Fri evening through Sun</li><li><span>Treat it like a TDY</span> — total focus, no social plans</li><li><span>Degree gates officer path</span> — this comes first</li></ul>
+    <div class="note">Map how many classes you have left and set a graduation target date. Makes it real.</div>
+  </div>
+  <div class="dcard">
+    <div class="dcard-hdr"><span class="dcard-title">Fitness</span><span class="eta-tag">Plan built — execute</span></div>
+    <ul><li><span>Formation → gym.</span> Never go home first.</li><li><span>Run days non-negotiable.</span> 15:30 is on the plan.</li><li>Sleep + nutrition = 70% of cut results</li></ul>
+  </div>
+  <div class="dcard">
+    <div class="dcard-hdr"><span class="dcard-title">Finance</span><span class="eta-tag">1 afternoon</span></div>
+    <ul><li><span>Auto-transfer savings on payday first.</span> Live on the rest.</li><li>Know your 3 numbers: income, fixed costs, remainder</li><li><span>Cut one unused subscription</span> this week — fast win</li></ul>
+  </div>
+  <div class="dcard">
+    <div class="dcard-hdr"><span class="dcard-title">Speech + communication</span><span class="eta-tag">8 weeks daily</span></div>
+    <ul><li><span>5 min morning vocal journal</span> — say your day plan out loud</li><li>Read <span>Thank You for Arguing</span> after Atomic Habits</li><li>One technique per week in real conversations</li></ul>
+  </div>
+  <div class="dcard">
+    <div class="dcard-hdr"><span class="dcard-title">Books</span><span class="eta-tag">20 pages/night</span></div>
+    <ul><li>After each session: <span>1 insight + 1 action this week</span></li><li>Order: <span>Atomic Habits</span> → Thank You for Arguing → 7 Keys (with wife)</li></ul>
+  </div>
+  <div class="dcard">
+    <div class="dcard-hdr"><span class="dcard-title">Officer path (OTS)</span><span class="eta-tag">After degree</span></div>
+    <ul><li>Requirements: <span>degree, AFOQT, commander endorsement</span>, age under 35</li><li>Degree comes first — it gates everything here</li></ul>
+    <div class="note">You're 30. Time exists but isn't unlimited. Degree → AFOQT → OTS board.</div>
+  </div>
+</div>
+
+<!-- SKINCARE -->
+<div id="skincare" class="panel">
+  <p style="font-size:12px;color:var(--muted);margin-bottom:18px;">Everything on the counter tonight. Visible = used.</p>
+
+  <div class="routine-block">
+    <div class="routine-label lbl-am">Morning — ~3 min</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Rinse with lukewarm water</div>
+        <div class="step-sub">No cleanser in the AM. Protects your skin barrier through the day.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Toner <span class="product-name">YOUR TONER</span></div>
+        <div class="step-sub">Pat gently onto face — don't rub. 30 seconds.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Red serum <span class="product-name">ANUA RED SERUM</span></div>
+        <div class="step-sub">2–3 drops. Pat in. Goes on before moisturizer so it actually absorbs.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">Moisturize <span class="product-name">ANUA LOTION</span></div>
+        <div class="step-sub">Apply while skin is still slightly damp. Absorbs in 30 sec. This is why it never felt "extra" before — you were applying to dry skin.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div>
+        <div class="step-title">SPF <span class="product-name">YOUR SPF</span></div>
+        <div class="step-sub">Last step always. Single biggest anti-aging move that exists. 20 seconds.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="routine-block">
+    <div class="routine-label lbl-pm">Evening — ~3 min</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Oil cleanser first <span class="product-name">ANUA OIL CLEANSER</span></div>
+        <div class="step-sub">Massage onto dry face for 30–60 sec. Breaks down SPF, sweat, and buildup from the day. Then rinse.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Green cleanser second <span class="product-name">ANUA GREEN CLEANSER</span></div>
+        <div class="step-sub">This is the double cleanse. The oil gets the surface, the green cleanser gets the skin itself. Rinse with lukewarm water.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Toner <span class="product-name">YOUR TONER</span></div>
+        <div class="step-sub">Same as morning — pat in gently.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">Red serum <span class="product-name">ANUA RED SERUM</span></div>
+        <div class="step-sub">PM is when your skin actually repairs. Active ingredients hit harder at night.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div>
+        <div class="step-title">Moisturize <span class="product-name">ANUA LOTION</span></div>
+        <div class="step-sub">Slightly heavier application at night is fine. Damp skin — same rule applies.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">Body</div>
+  <div class="step" style="border-top:none;">
+    <div class="step-num">1</div>
+    <div>
+      <div class="step-title">Lotion right after shower</div>
+      <div class="step-sub">Step out, light pat — not full dry. Apply immediately. Absorbs in 30 sec on damp skin. This is the whole trick.</div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div>
+      <div class="step-title">Lotion on the counter, not under the sink</div>
+      <div class="step-sub">Visible = used. Out of sight = forgotten. Same rule as skincare.</div>
+    </div>
+  </div>
+</div>
+
+<!-- RULES -->
+<div id="rules" class="panel">
+  <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Non-negotiable. Everything else is adjustable.</p>
+  <div class="rule"><div class="rule-title">Never miss twice</div><div class="rule-sub">One miss is an accident. Two is a pattern. Get back immediately — no spiral, no shame.</div></div>
+  <div class="rule"><div class="rule-title">Identity before action</div><div class="rule-sub">You're not "trying to get fit." You're an athlete cutting. You're not "trying to do skincare." You're a man who takes care of himself. Behavior follows identity.</div></div>
+  <div class="rule"><div class="rule-title">Friction is the enemy</div><div class="rule-sub">Products on the counter. Gym bag packed the night before. Books on the nightstand. Make the right choice the easy choice.</div></div>
+  <div class="rule"><div class="rule-title">Phone is not a default</div><div class="rule-sub">1hr hard limit on social + gaming. Out of bedroom by 2100. You summon it. It doesn't summon you.</div></div>
+  <div class="rule"><div class="rule-title">One growth block per evening</div><div class="rule-sub">School OR reading. Not both. Focused output compounds. Scattered effort doesn't.</div></div>
+  <div class="rule"><div class="rule-title">Sleep is a performance tool</div><div class="rule-sub">Sub-7 hours kills fat loss, run time, cognitive speed, and mood. 2100 bedtime is not optional.</div></div>
+  <div class="rule"><div class="rule-title">Don't optimize what you haven't started</div><div class="rule-sub">A good routine you actually run beats the perfect one you're still planning. Start imperfect. Adjust as you go.</div></div>
+</div>
+
+</main>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  document.querySelector('main').scrollTop = 0;
+}
+</script>
+</body>
+</html>
